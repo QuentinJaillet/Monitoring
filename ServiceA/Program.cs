@@ -7,6 +7,7 @@ using OpenTelemetry.Trace;
 var builder = WebApplication.CreateBuilder(args);
 
 const string serviceName = "service-a";
+var serviceVersion = "1.0.0";
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,22 +23,21 @@ builder.Logging.AddOpenTelemetry(options =>
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(serviceName))
     .WithTracing(tracing => tracing
+        .AddSource(serviceName)
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddOtlpExporter())
     .WithMetrics(metrics => metrics
+        .AddMeter(serviceName)
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddOtlpExporter());
 
-builder.Logging.AddOpenTelemetry(logging => {
-    // The rest of your setup code goes here
-
-    logging.IncludeFormattedMessage = true;
-    logging.IncludeScopes = true;
-    logging.ParseStateValues = true;
-    logging.AddOtlpExporter();
-});
+builder.Logging.AddOpenTelemetry(options => options
+    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(
+        serviceName: serviceName,
+        serviceVersion: serviceVersion))
+    .AddOtlpExporter());
 
 var app = builder.Build();
 
@@ -58,7 +58,7 @@ var summaries = new[]
 app.MapGet("/weatherforecast", () =>
     {
         app.Logger.LogInformation("Weather forecast");
-        
+
         var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 (
@@ -73,10 +73,23 @@ app.MapGet("/weatherforecast", () =>
     .WithOpenApi();
 
 // This is a sample of how to use the OpenTelemetry API to create a span
-app.MapGet("/activity", () =>
+app.MapGet("/activity", (ActivitySource activitySource) =>
 {
-    using var activity = new Activity("Activity").Start();
-    app.Logger.LogInformation("Activity");
+    using var myActivity1 = activitySource.StartActivity("MyActivity1", ActivityKind.Client);
+    app.Logger.LogInformation("Activity1");
+    
+    myActivity1?.SetTag("user.id", Guid.NewGuid().ToString());
+    myActivity1?.SetTag("commande.id", Guid.NewGuid().ToString());
+    
+    // Simulate some work
+    Thread.Sleep(1000);
+    myActivity1.Stop();
+    
+    using var myActivity2 = activitySource.StartActivity("MyActivity2", ActivityKind.Server);
+    app.Logger.LogInformation("Activity2");
+    
+    myActivity2?.SetTag("user.id", Guid.NewGuid().ToString());
+    myActivity2?.SetTag("commande.id", Guid.NewGuid().ToString());
 
     var forecast = Enumerable.Range(1, 5).Select(index =>
             new WeatherForecast

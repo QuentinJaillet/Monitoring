@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -22,10 +23,21 @@ builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(serviceName))
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
-        .AddConsoleExporter())
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
-        .AddConsoleExporter());
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter());
+
+builder.Logging.AddOpenTelemetry(logging => {
+    // The rest of your setup code goes here
+
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.ParseStateValues = true;
+    logging.AddOtlpExporter();
+});
 
 var app = builder.Build();
 
@@ -45,6 +57,8 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
     {
+        app.Logger.LogInformation("Weather forecast");
+        
         var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 (
@@ -57,6 +71,31 @@ app.MapGet("/weatherforecast", () =>
     })
     .WithName("GetWeatherForecast")
     .WithOpenApi();
+
+// This is a sample of how to use the OpenTelemetry API to create a span
+app.MapGet("/activity", () =>
+{
+    using var activity = new Activity("Activity").Start();
+    app.Logger.LogInformation("Activity");
+
+    var forecast = Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)]
+            ))
+        .ToArray();
+    return forecast;
+}).WithName("Activity").WithOpenApi();
+
+// Failed Test
+app.MapGet("/failed", () =>
+{
+    app.Logger.LogInformation("Failed");
+    throw new Exception("Failed");
+}).WithName("Failed").WithOpenApi();
+
 
 app.Run();
 

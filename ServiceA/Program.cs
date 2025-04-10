@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -31,6 +32,9 @@ builder.Services.AddOpenTelemetry()
         .AddMeter(serviceName)
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
+        .AddProcessInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter()
         .AddOtlpExporter());
 
 builder.Logging.AddOpenTelemetry(options => options
@@ -40,6 +44,9 @@ builder.Logging.AddOpenTelemetry(options => options
     .AddOtlpExporter());
 
 var app = builder.Build();
+
+app.MapPrometheusScrapingEndpoint();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -55,9 +62,14 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/weatherforecast", (IMeterFactory meterFactory) =>
     {
         app.Logger.LogInformation("Weather forecast");
+        
+        /*var meter = meterFactory.Create(configuration["BookStoreMeterName"] ?? 
+                                       throw new NullReferenceException("BookStore meter missing a name"));
+        
+        BooksAddedCounter = meter.CreateCounter<int>("books-added", "Book");*/
 
         var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast

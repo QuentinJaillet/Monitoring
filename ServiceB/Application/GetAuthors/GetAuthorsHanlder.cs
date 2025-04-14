@@ -1,4 +1,6 @@
 ﻿using MediatR;
+using ServiceB.Application.Mappers;
+using ServiceB.Application.ViewModels;
 using ServiceB.Infrastructure.Persistence;
 
 namespace ServiceB.Application.GetAuthors;

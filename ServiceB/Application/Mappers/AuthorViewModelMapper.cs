@@ -1,4 +1,6 @@
-﻿namespace ServiceB.Application.GetAuthors;
+﻿using ServiceB.Application.ViewModels;
+
+namespace ServiceB.Application.Mappers;
 
 public static class AuthorViewModelMapper
 {

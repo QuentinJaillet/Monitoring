@@ -1,4 +1,4 @@
-﻿namespace ServiceB.Application.GetAuthors;
+﻿namespace ServiceB.Application.ViewModels;
 
 public class AuthorViewModel
 {
@@ -6,5 +6,4 @@ public class AuthorViewModel
     public string Firstname { get; set; }
     public string Lastname { get; set; }
     public string Picture { get; set; }
-    //public int BooksCount { get; set; }
 }

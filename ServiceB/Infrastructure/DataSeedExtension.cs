@@ -1,4 +1,5 @@
-﻿using ServiceB.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using ServiceB.Domain;
 
 namespace ServiceB.Infrastructure;
 
@@ -8,6 +9,11 @@ public static class DataSeedExtension
     {
         using var scope = serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await dbContext.Database.EnsureCreatedAsync();
+
+        if (await dbContext.Authors.AnyAsync())
+            return;
 
         // Author data
         var authors = new List<Author>
@@ -28,7 +34,35 @@ public static class DataSeedExtension
             }
         };
 
+        // Book data
+        var books = new List<Book>
+        {
+            new Book
+            {
+                Id = Guid.NewGuid(),
+                Title = "Book 1",
+                Description = "Description for Book 1",
+                Price = 19.99m,
+                PublicationDate = DateTime.UtcNow,
+                ISBN = "978-3-16-148410-0",
+                Language = "English",
+                AuthorId = authors[0].Id
+            },
+            new Book
+            {
+                Id = Guid.NewGuid(),
+                Title = "Book 2",
+                Description = "Description for Book 2",
+                Price = 29.99m,
+                PublicationDate = DateTime.UtcNow,
+                ISBN = "978-1-234-56789-7",
+                Language = "English",
+                AuthorId = authors[1].Id
+            }
+        };
+
         await dbContext.Authors.AddRangeAsync(authors);
+        await dbContext.Books.AddRangeAsync(books);
         await dbContext.SaveChangesAsync();
     }
 }

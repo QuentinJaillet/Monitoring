@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monitoring", "Monitoring\Monitoring.csproj", "{BCADA688-6D7C-437B-9D8B-EBA013F3F882}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceA", "ServiceA\ServiceA.csproj", "{0D701376-E9EB-4FD6-A03E-C7DBC68FA38B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceB", "ServiceB\ServiceB.csproj", "{ED12F291-FA45-431E-983B-703470818958}"
@@ -12,10 +10,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BCADA688-6D7C-437B-9D8B-EBA013F3F882}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCADA688-6D7C-437B-9D8B-EBA013F3F882}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BCADA688-6D7C-437B-9D8B-EBA013F3F882}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BCADA688-6D7C-437B-9D8B-EBA013F3F882}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D701376-E9EB-4FD6-A03E-C7DBC68FA38B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D701376-E9EB-4FD6-A03E-C7DBC68FA38B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D701376-E9EB-4FD6-A03E-C7DBC68FA38B}.Release|Any CPU.ActiveCfg = Release|Any CPU

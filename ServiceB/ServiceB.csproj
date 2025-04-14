@@ -26,7 +26,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\Auhtor\" />
       <Folder Include="Application\Book\" />
     </ItemGroup>
 

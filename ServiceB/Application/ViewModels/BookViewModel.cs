@@ -6,7 +6,7 @@ public class BookViewModel
     public string Title { get; set; }
     public string Description { get; set; }
     public AuthorViewModel Author { get; set; }
-    public Decimal Price { get; set; }
+    public decimal Price { get; set; }
     public DateTime PublicationDate { get; set; }
     public string ISBN { get; set; }
     public string Language { get; set; }

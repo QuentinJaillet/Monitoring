@@ -7,7 +7,7 @@ public class Book
     public string Description { get; set; }
     public Author Author { get; set; }
     public Guid AuthorId { get; set; }
-    public Decimal Price { get; set; }
+    public decimal Price { get; set; }
     public DateTime PublicationDate { get; set; }
     public string ISBN { get; set; }
     public string Language { get; set; }

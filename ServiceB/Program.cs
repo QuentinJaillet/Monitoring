@@ -4,8 +4,9 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ServiceB.Application.GetAuthors;
-using ServiceB.Application.GetBooks;
+using ServiceB.Application.Auhtor.AddAuthor;
+using ServiceB.Application.Auhtor.GetAuthors;
+using ServiceB.Application.Book.GetBooks;
 using ServiceB.Application.ViewModels;
 using ServiceB.Infrastructure;
 
@@ -66,6 +67,19 @@ app.MapGet("/authors", async (IMediator mediator) =>
         return Results.Ok(authors);
     }).WithName("GetAuthors")
     .Produces<IList<AuthorViewModel>>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status500InternalServerError);
+
+// Add a new author
+app.MapPost("/authors", async (IMediator mediator, string firstname, string lastname, string picture) =>
+    {
+        var authorId = await mediator.Send(new AddAuthorCommand(firstname, lastname, picture));
+        
+        return authorId == Guid.Empty ? 
+            Results.BadRequest("Author already exists") : 
+            Results.Created($"/authors/{authorId}", authorId);
+    }).WithName("AddAuthor")
+    .Produces<Guid>(StatusCodes.Status201Created)
+    .Produces(StatusCodes.Status400BadRequest)
     .Produces(StatusCodes.Status500InternalServerError);
 
 // Book API

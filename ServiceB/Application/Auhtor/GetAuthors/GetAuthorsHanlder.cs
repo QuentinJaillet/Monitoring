@@ -3,7 +3,7 @@ using ServiceB.Application.Mappers;
 using ServiceB.Application.ViewModels;
 using ServiceB.Infrastructure.Persistence;
 
-namespace ServiceB.Application.GetAuthors;
+namespace ServiceB.Application.Auhtor.GetAuthors;
 
 public class GetAuthorsHanlder : IRequestHandler<GetAuthorsQuery, IList<AuthorViewModel>>
 {

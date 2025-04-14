@@ -3,7 +3,7 @@ using ServiceB.Application.Mappers;
 using ServiceB.Application.ViewModels;
 using ServiceB.Infrastructure.Persistence;
 
-namespace ServiceB.Application.GetBooks;
+namespace ServiceB.Application.Book.GetBooks;
 
 public class GetBooksQueryHandler : IRequestHandler<GetBooksQuery, IList<BookViewModel>>
 {

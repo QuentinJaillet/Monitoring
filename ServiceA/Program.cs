@@ -65,6 +65,16 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
+// Exemple de métrique personnalisée
+var meter = new Meter("my_application");
+var requestCounter = meter.CreateCounter<int>("request_count", "Nombre de requêtes traitées");
+
+app.MapGet("/", () =>
+{
+    requestCounter.Add(1); // Incrémenter le compteur à chaque requête
+    return "Hello, World!";
+});
+
 app.MapGet("/weatherforecast", (IMeterFactory meterFactory) =>
     {
         app.Logger.LogInformation("Weather forecast");

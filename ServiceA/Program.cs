@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Dapr.Client;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ServiceA;
+using ServiceA.ViewModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,10 +68,10 @@ var summaries = new[]
 app.MapGet("/weatherforecast", (IMeterFactory meterFactory) =>
     {
         app.Logger.LogInformation("Weather forecast");
-        
-        /*var meter = meterFactory.Create(configuration["BookStoreMeterName"] ?? 
+
+        /*var meter = meterFactory.Create(configuration["BookStoreMeterName"] ??
                                        throw new NullReferenceException("BookStore meter missing a name"));
-        
+
         BooksAddedCounter = meter.CreateCounter<int>("books-added", "Book");*/
 
         var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -90,17 +92,17 @@ app.MapGet("/activity", (ActivitySource activitySource) =>
 {
     using var myActivity1 = activitySource.StartActivity("MyActivity1", ActivityKind.Client);
     app.Logger.LogInformation("Activity1");
-    
+
     myActivity1?.SetTag("user.id", Guid.NewGuid().ToString());
     myActivity1?.SetTag("commande.id", Guid.NewGuid().ToString());
-    
+
     // Simulate some work
     Thread.Sleep(1000);
     myActivity1.Stop();
-    
+
     using var myActivity2 = activitySource.StartActivity("MyActivity2", ActivityKind.Server);
     app.Logger.LogInformation("Activity2");
-    
+
     myActivity2?.SetTag("user.id", Guid.NewGuid().ToString());
     myActivity2?.SetTag("commande.id", Guid.NewGuid().ToString());
 
@@ -122,12 +124,21 @@ app.MapGet("/failed", () =>
     throw new Exception("Failed");
 }).WithName("Failed").WithOpenApi();
 
+app.MapGet("/books", async () =>
+{
+    var client = DaprClient.CreateInvokeHttpClient(appId: "service-b");
+    var cts = new CancellationTokenSource();
+
+    var response = await client.GetFromJsonAsync<IEnumerable<BookViewModel>>("/books", cts.Token);
+    return response;
+});
+
 
 app.Run();
 
 namespace ServiceA
 {
-    record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     {
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }

@@ -1,0 +1,9 @@
+﻿scrape_configs:
+  - job_name: service-a
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ "service-a:8080" ]
+  - job_name: service-b
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ "service-b:8080" ]

@@ -60,6 +60,9 @@ builder.Logging.AddOpenTelemetry(options => options
 
 var app = builder.Build();
 
+app.MapPrometheusScrapingEndpoint();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 // DataBase seeding
 using var scope = app.Services.CreateScope();
 //var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

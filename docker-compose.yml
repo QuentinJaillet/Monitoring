@@ -1,10 +1,40 @@
 version: '3.8'
 
 services:
-  service-b:
-    container_name: service-b
-    build: 
-        context: ServiceB
-        dockerfile: Dockerfile
+  service-a:
+    container_name: ServiceA
+    build: ServiceA/.
     ports:
-      - "8080:8080"
+      - "5115:8080"
+    networks:
+      - monitoring
+
+  service-b:
+    container_name: ServiceB
+    build: ServiceB/.
+    ports:
+      - "5266:8080"
+    networks:
+      - monitoring
+  
+  prometheus:
+    container_name: Prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    container_name: Grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge

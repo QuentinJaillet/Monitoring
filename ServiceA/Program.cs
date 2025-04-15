@@ -11,7 +11,7 @@ using ServiceA.ViewModels;
 var builder = WebApplication.CreateBuilder(args);
 
 const string serviceName = "service-a";
-var serviceVersion = "1.0.0";
+const string serviceVersion = "1.0.0";
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -89,50 +89,66 @@ app.MapGet("/weatherforecast", (IMeterFactory meterFactory) =>
 
 // This is a sample of how to use the OpenTelemetry API to create a span
 app.MapGet("/activity", (ActivitySource activitySource) =>
-{
-    using var myActivity1 = activitySource.StartActivity("MyActivity1", ActivityKind.Client);
-    app.Logger.LogInformation("Activity1");
+    {
+        using var myActivity1 = activitySource.StartActivity("MyActivity1", ActivityKind.Client);
+        app.Logger.LogInformation("Activity1");
 
-    myActivity1?.SetTag("user.id", Guid.NewGuid().ToString());
-    myActivity1?.SetTag("commande.id", Guid.NewGuid().ToString());
+        myActivity1?.SetTag("user.id", Guid.NewGuid().ToString());
+        myActivity1?.SetTag("commande.id", Guid.NewGuid().ToString());
 
-    // Simulate some work
-    Thread.Sleep(1000);
-    myActivity1.Stop();
+        // Simulate some work
+        Thread.Sleep(1000);
+        myActivity1.Stop();
 
-    using var myActivity2 = activitySource.StartActivity("MyActivity2", ActivityKind.Server);
-    app.Logger.LogInformation("Activity2");
+        using var myActivity2 = activitySource.StartActivity("MyActivity2", ActivityKind.Server);
+        app.Logger.LogInformation("Activity2");
 
-    myActivity2?.SetTag("user.id", Guid.NewGuid().ToString());
-    myActivity2?.SetTag("commande.id", Guid.NewGuid().ToString());
+        myActivity2?.SetTag("user.id", Guid.NewGuid().ToString());
+        myActivity2?.SetTag("commande.id", Guid.NewGuid().ToString());
 
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-            new WeatherForecast
-            (
-                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                Random.Shared.Next(-20, 55),
-                summaries[Random.Shared.Next(summaries.Length)]
-            ))
-        .ToArray();
-    return forecast;
-}).WithName("Activity").WithOpenApi();
+        var forecast = Enumerable.Range(1, 5).Select(index =>
+                new WeatherForecast
+                (
+                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    Random.Shared.Next(-20, 55),
+                    summaries[Random.Shared.Next(summaries.Length)]
+                ))
+            .ToArray();
+        return forecast;
+    })
+    .WithName("Activity")
+    .WithOpenApi();
 
 // Failed Test
 app.MapGet("/failed", () =>
-{
-    app.Logger.LogInformation("Failed");
-    throw new Exception("Failed");
-}).WithName("Failed").WithOpenApi();
+    {
+        app.Logger.LogInformation("Failed");
+        throw new Exception("Failed");
+    })
+    .WithName("Failed")
+    .WithOpenApi();
 
 app.MapGet("/books", async () =>
-{
-    var client = DaprClient.CreateInvokeHttpClient(appId: "service-b");
-    var cts = new CancellationTokenSource();
+    {
+        var client = DaprClient.CreateInvokeHttpClient(appId: "service-b");
+        var cts = new CancellationTokenSource();
 
-    var response = await client.GetFromJsonAsync<IEnumerable<BookViewModel>>("/books", cts.Token);
-    return response;
-});
+        var response = await client.GetFromJsonAsync<IEnumerable<BookViewModel>>("/books", cts.Token);
+        return response;
+    })
+    .WithName("Books")
+    .WithOpenApi();
 
+app.MapGet("/authors", async () =>
+    {
+        var client = DaprClient.CreateInvokeHttpClient(appId: "service-b");
+        var cts = new CancellationTokenSource();
+
+        var response = await client.GetFromJsonAsync<IEnumerable<AuthorViewModel>>("/authors", cts.Token);
+        return response;
+    })
+    .WithName("Authors")
+    .WithOpenApi();
 
 app.Run();
 

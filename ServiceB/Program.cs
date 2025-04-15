@@ -13,6 +13,7 @@ using ServiceB.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 const string serviceName = "service-b";
+const string serviceVersion = "1.0.0";
 
 // Mediator        
 builder.Services.AddMediatR(cfg =>
@@ -38,11 +39,24 @@ builder.Logging.AddOpenTelemetry(options =>
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(serviceName))
     .WithTracing(tracing => tracing
+        .AddSource(serviceName)
         .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation())
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
     .WithMetrics(metrics => metrics
+        .AddMeter(serviceName)
         .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation());
+        .AddHttpClientInstrumentation()
+        .AddProcessInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter()
+        .AddOtlpExporter());
+
+builder.Logging.AddOpenTelemetry(options => options
+    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(
+        serviceName: serviceName,
+        serviceVersion: serviceVersion))
+    .AddOtlpExporter());
 
 var app = builder.Build();
 

@@ -22,7 +22,7 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
+    ports: 
       - "9090:9090"
     networks:
       - monitoring
@@ -32,9 +32,14 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
     networks:
       - monitoring
 
 networks:
   monitoring:
     driver: bridge
+    
+volumes:
+  grafana-data:

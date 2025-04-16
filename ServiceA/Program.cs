@@ -66,8 +66,8 @@ var summaries = new[]
 };
 
 // Exemple de métrique personnalisée
-var meter = new Meter("my_application");
-var requestCounter = meter.CreateCounter<int>("request_count", "Nombre de requêtes traitées");
+var meter = new Meter("service-a", "1.0.0");
+var requestCounter = meter.CreateCounter<int>("request_count");
 
 app.MapGet("/", () =>
 {

@@ -68,11 +68,34 @@ var summaries = new[]
 // Exemple de métrique personnalisée
 var meter = new Meter("service-a", "1.0.0");
 var requestCounter = meter.CreateCounter<int>("request_count");
+var upDownCounter = meter.CreateUpDownCounter<int>("up_down_counter");
+var histogram = meter.CreateHistogram<double>("histogram", "ms", "Histogram for request duration");
+//var gauge = meter.CreateObservableGauge<int>("gauge", "Gauge for current value", () => new Measurement<int>(requestCounter.GetCurrentValue(), new KeyValuePair<string, object?>("gauge", "value")));
 
 app.MapGet("/", () =>
 {
     requestCounter.Add(1); // Incrémenter le compteur à chaque requête
     return "Hello, World!";
+});
+
+app.MapGet("/up", () =>
+{
+    upDownCounter.Add(1); // Incrémenter le compteur à chaque requête
+    return "Up";
+});
+
+app.MapGet("/down", () =>
+{
+    upDownCounter.Add(-1); // Décrémenter le compteur à chaque requête
+    return "Down";
+});
+
+app.MapGet("/histogram", () =>
+{
+    var random = new Random();
+    var duration = random.Next(1, 1000); // Simuler une durée aléatoire entre 1 et 1000 ms
+    histogram.Record(duration); // Enregistrer la durée dans l'histogramme
+    return $"Histogram recorded with duration: {duration} ms";
 });
 
 app.MapGet("/weatherforecast", (IMeterFactory meterFactory) =>

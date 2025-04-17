@@ -72,6 +72,8 @@ builder.Logging.AddOpenTelemetry(options => options
         serviceVersion: serviceVersion))
     .AddOtlpExporter());
 
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 app.MapPrometheusScrapingEndpoint();
@@ -92,45 +94,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Author API
-app.MapGet("/authors", async (IMediator mediator) =>
-    {
-        var authors = await mediator.Send(new GetAuthorsQuery());
-        return Results.Ok(authors);
-    }).WithName("GetAuthors")
-    .Produces<IList<AuthorViewModel>>(StatusCodes.Status200OK)
-    .Produces(StatusCodes.Status500InternalServerError);
-
-// Add a new author
-app.MapPost("/authors", async (IMediator mediator, string firstname, string lastname, string picture) =>
-    {
-        var authorId = await mediator.Send(new AddAuthorCommand(firstname, lastname, picture));
-        
-        return authorId == Guid.Empty ? 
-            Results.BadRequest("Author already exists") : 
-            Results.Created($"/authors/{authorId}", authorId);
-    }).WithName("AddAuthor")
-    .Produces<Guid>(StatusCodes.Status201Created)
-    .Produces(StatusCodes.Status400BadRequest)
-    .Produces(StatusCodes.Status500InternalServerError);
-
-// Get author by ID
-app.MapGet("/authors/{id:guid}", async (IMediator mediator, Guid id) =>
-    {
-        var author = await mediator.Send(new GetAuthorQuery(id));
-        return Results.Ok(author);
-    }).WithName("GetAuthor")
-    .Produces<AuthorViewModel>(StatusCodes.Status200OK)
-    .Produces(StatusCodes.Status404NotFound)
-    .Produces(StatusCodes.Status500InternalServerError);
-
-// Book API
-app.MapGet("/books", async (IMediator mediator) =>
-    {
-        var books = await mediator.Send(new GetBooksQuery());
-        return Results.Ok(books);
-    }).WithName("GetBooks")
-    .Produces<IList<BookViewModel>>(StatusCodes.Status200OK)
-    .Produces(StatusCodes.Status500InternalServerError);
+app.MapControllers();             
 
 app.Run();

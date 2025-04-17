@@ -8,6 +8,8 @@ services:
       - "5115:8080"
     networks:
       - monitoring
+    labels:
+      - "job=service-a" 
 
   service-b:
     container_name: ServiceB
@@ -16,6 +18,8 @@ services:
       - "5266:8080"
     networks:
       - monitoring
+    labels:
+      - "job=service-b"
   
   prometheus:
     container_name: Prometheus
@@ -34,6 +38,31 @@ services:
       - "3000:3000"
     networks:
       - monitoring
+
+  loki:
+      image: grafana/loki:latest
+      container_name: loki
+      ports:
+        - "3100:3100"
+      volumes:
+        - ./loki.yaml:/etc/loki/local-config.yaml
+      networks:
+        - monitoring
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    entrypoint: ["/bin/sh", "-c", "sleep 5 && /usr/bin/promtail -config.file=/etc/promtail/promtail.yaml"]
+    volumes:
+      - ./promtail.yaml:/etc/promtail/promtail.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tmp:/tmp
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+    restart: unless-stopped
 
 networks:
   monitoring:

@@ -10,10 +10,24 @@ using ServiceB.Application.Auhtor.GetAuthors;
 using ServiceB.Application.Book.GetBooks;
 using ServiceB.Application.ViewModels;
 using ServiceB.Infrastructure;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
 const string serviceName = "service-b";
 const string serviceVersion = "1.0.0";
+
+// Configure Serilog for logging
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File(
+        new RenderedCompactJsonFormatter(),
+        "Logs/serviceB_log.txt",
+        rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+// Log Information about application start
+Log.Information("Starting {ServiceName} version {ServiceVersion}", serviceName, serviceVersion);
 
 // Mediator        
 builder.Services.AddMediatR(cfg =>
